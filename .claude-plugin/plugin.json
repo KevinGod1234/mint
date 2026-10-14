@@ -1,0 +1,10 @@
+{
+  "name": "solana-token-intel",
+  "version": "0.1.0",
+  "description": "Look up a Solana token's make-up, origin, price history, pools, holders, risk signals and Artist Passport endorsements. Read-only; bring your own RPC and keys.",
+  "author": { "name": "Kevin Fransman", "url": "https://github.com/KevinGod1234" },
+  "homepage": "https://github.com/KevinGod1234/solana-token-intel",
+  "repository": "https://github.com/KevinGod1234/solana-token-intel",
+  "license": "MIT",
+  "keywords": ["solana", "token", "crypto", "on-chain", "research"]
+}
