@@ -3,9 +3,11 @@
 BIRDEYE_API_KEY is set, else GeckoTerminal (the most liquid pool)."""
 
 import time
+from datetime import datetime, timezone
 
 from common import BIRDEYE_API, GECKO_API, SourceError, config, http_json, iso, script
 
+FREE_DAYS = 180  # GeckoTerminal's keyless API refuses older candles (checked 2026-10-15)
 INTERVALS = {  # name: (seconds, GeckoTerminal timeframe, aggregate, Birdeye type)
     "1m": (60, "minute", 1, "1m"),
     "5m": (300, "minute", 5, "5m"),
@@ -45,6 +47,25 @@ def from_gecko(pool, mint, interval, limit):
     return [candle(*row) for row in reversed(rows)]  # GeckoTerminal sends newest first
 
 
+def covers_launch(first_candle, pool_created_at, interval):
+    """True when the candles start within one interval of the pool's creation."""
+    if not first_candle or not pool_created_at:
+        return None
+    parse = lambda t: datetime.strptime(t[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
+    return parse(first_candle) - parse(pool_created_at) <= INTERVALS[interval][0]
+
+
+def window_reason(data, limit, interval):
+    if data["covers_full_history"] is None:
+        return "pool creation time unknown, so range_high and range_low may not be all-time values"
+    seconds = INTERVALS[interval][0]
+    why = (f"GeckoTerminal's free API returns only the past {FREE_DAYS} days"
+           if data.get("scope") == "most liquid pool" and limit * seconds > FREE_DAYS * 86400
+           else f"{limit} {interval} candles do not reach back to launch; raise --limit or use a longer --interval")
+    return (f"candles start {data['first_candle']}, but the pool was created {data['pool_created_at']}: {why}. "
+            "range_high and range_low cover the returned candles only")
+
+
 def collect(mint, result, args):
     interval, limit = args.interval, max(1, min(args.limit, 1000))
     data = {"interval": interval}
@@ -58,7 +79,8 @@ def collect(mint, result, args):
         except (SourceError, KeyError, TypeError) as e:
             result.miss("Birdeye price history", f"{e}; fell back to GeckoTerminal", partial=False)
     else:
-        result.miss("price across all pools", "BIRDEYE_API_KEY is not set; showing the most liquid pool only",
+        result.miss("price across all pools", "BIRDEYE_API_KEY is not set; showing the most liquid pool only. Trading in other "
+                    "pools, including a launchpad bonding curve before graduation, is not included",
                     partial=False)
 
     pool = top_pool(mint)
@@ -76,14 +98,18 @@ def collect(mint, result, args):
         result.miss("candles", "no trades found for this token in the chosen range")
         candles = []
     closes = [c["close"] for c in candles if c["close"]]
+    first = candles[0]["time"] if candles else None
     data.update(
-        first_candle=candles[0]["time"] if candles else None,
+        first_candle=first,
         last_candle=candles[-1]["time"] if candles else None,
         change_pct=round((closes[-1] / closes[0] - 1) * 100, 2) if len(closes) > 1 else None,
-        high=max((c["high"] for c in candles), default=None),
-        low=min((c["low"] for c in candles), default=None),
+        range_high=max((c["high"] for c in candles), default=None),
+        range_low=min((c["low"] for c in candles), default=None),
+        covers_full_history=covers_launch(first, data.get("pool_created_at"), interval),
         candles=candles,
     )
+    if data["covers_full_history"] is not True:
+        result.miss("all-time high and low", window_reason(data, limit, interval), partial=False)
     result["data"] = data
     result.miss("market cap over time", "sources give candles for price only; current market cap is shown",
                 partial=False)

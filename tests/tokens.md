@@ -3,8 +3,11 @@
 Run every script against these before a release:
 
 ```
-python3 tests/live.py
+MINT_MAX_CALLS_PER_HOUR=1000 python3 tests/live.py
 ```
+
+The full run makes about 200 public RPC requests, so it raises the hourly
+call budget for itself. Normal use keeps the default of 200.
 
 `tests/live.py` reads the table below. Picked and checked on 2026-10-14.
 New pump.fun coins age fast: replace that row with a coin from the last hour
@@ -19,8 +22,3 @@ before each release (GeckoTerminal `/networks/solana/new_pools`).
 | well-known | JUP | `JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN` | Large token, Metaplex metadata |
 | well-known | PYUSD (Token-2022) | `2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo` | Many Token-2022 extensions |
 | known rug | LIBRA | `Bo9jh3wsmcC2AjakLWzNmKJ3SgtZmXEcSaW7L2FAvUsU` | Widely reported collapse, Feb 2025; liquidity pulled |
-| endorsed (devnet) | riff demo coin | `DffTqQTB8YsqFMA5gewV7NPau3NRxHj8AsqAGR77UWGt` | Artist Passport record: endorsed |
-| disavowed (devnet) | riff demo coin | `98EFoVUTSeTdNBXmPSmb7SPuDeyXnsZSwFrR17J5PAMU` | Artist Passport record: disavowed |
-
-The two devnet mints exist only on devnet: mainnet scripts are expected to
-fail on them, so `live.py` runs only `endorsement.py` for them.

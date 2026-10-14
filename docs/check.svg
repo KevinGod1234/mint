@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="808" height="999" viewBox="0 0 808 999" role="img" aria-label="mint risk --pretty  (with a free Helius key)">
+<title>mint risk --pretty  (with a free Helius key)</title>
+<rect width="808" height="999" rx="10" fill="#16161e"/>
+<circle cx="22" cy="20" r="6" fill="#ff5f57"/><circle cx="42" cy="20" r="6" fill="#febc2e"/><circle cx="62" cy="20" r="6" fill="#28c840"/>
+<text x="404.0" y="24" fill="#6c6c7a" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" text-anchor="middle">mint risk --pretty  (with a free Helius key)</text>
+<g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="14">
+<text y="58" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0"> </tspan><tspan x="30.4" fill="#af87ff" font-weight="700">◆</tspan><tspan x="38.8" fill="#d0d0d0"> </tspan><tspan x="47.2" fill="#af87ff" font-weight="700">mint</tspan><tspan x="80.8" fill="#d0d0d0">  </tspan><tspan x="97.6" fill="#bcbcbc">risk</tspan><tspan x="131.2" fill="#d0d0d0">  </tspan><tspan x="148.0" fill="#87d7ff">Bo9jh3wsmcC2AjakLWzNmKJ3SgtZmXEcSaW7L2FAvUsU</tspan></text>
+<text y="77" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0"> </tspan><tspan x="30.4" fill="#8a8a8a">──────────────────────────────────────────────────────────────────────────────────────────</tspan></text>
+<text y="96" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">fetched 2026-10-14T22:32:04Z</tspan></text>
+<text y="115" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">signals found                 </tspan><tspan x="290.8" fill="#d0d0d0">   3</tspan></text>
+<text y="134" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">signals checked               </tspan><tspan x="290.8" fill="#d0d0d0">   6</tspan></text>
+<text y="153" xml:space="preserve"></text>
+<text y="172" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0"> </tspan><tspan x="30.4" fill="#af87ff" font-weight="700">SIGNALS</tspan></text>
+<text y="191" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">More tokens can be minted</tspan><tspan x="265.6" fill="#d0d0d0">  </tspan><tspan x="282.4" fill="#8a8a8a">not found</tspan></text>
+<text y="210" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">mint authority is revoked</tspan></text>
+<text y="229" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Token accounts can be frozen</tspan><tspan x="290.8" fill="#d0d0d0">  </tspan><tspan x="307.6" fill="#8a8a8a">not found</tspan></text>
+<text y="248" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">freeze authority is revoked</tspan></text>
+<text y="267" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Token-2022 extensions that limit holders</tspan><tspan x="391.6" fill="#d0d0d0">  </tspan><tspan x="408.4" fill="#8a8a8a">not applicable</tspan></text>
+<text y="286" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">SPL Token mint: no extensions</tspan></text>
+<text y="305" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#ffd75f">!</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Name, symbol or image can be changed</tspan><tspan x="358.0" fill="#d0d0d0">  </tspan><tspan x="374.8" fill="#ffd75f">found</tspan></text>
+<text y="324" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">update authority DefcyKc4yAjRsCLZjdxWuSUzVohXtLna9g22y3pBCm2z (Metaplex metadata</tspan></text>
+<text y="343" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">account)</tspan></text>
+<text y="362" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Supply is concentrated in few wallets</tspan><tspan x="366.4" fill="#d0d0d0">  </tspan><tspan x="383.2" fill="#8a8a8a">not found</tspan></text>
+<text y="381" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">top 10 wallets hold 26.1105%; largest wallet 20.0003%; 5 program accounts in the top</tspan></text>
+<text y="400" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">20 were excluded</tspan></text>
+<text y="419" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#ffd75f">!</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Liquidity can be withdrawn by an LP holder</tspan><tspan x="408.4" fill="#d0d0d0">  </tspan><tspan x="425.2" fill="#ffd75f">found</tspan></text>
+<text y="438" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">raydium LIBRA/SOL (DywR4cjNLhPy1dV9tBShpCbXoAAq3LN3Wajj9Gw64co9): 0% of LP tokens at</tspan></text>
+<text y="457" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">the burn address; largest LP holder EezPL35SyCwZfavH7sDyxFL5ZKiQP9wpwY8Dhs3rSkBf has</tspan></text>
+<text y="476" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">51.0757%</tspan></text>
+<text y="495" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#ffd75f">!</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Creator wallet was new when the token was made</tspan><tspan x="442.0" fill="#d0d0d0">  </tspan><tspan x="458.8" fill="#ffd75f">found</tspan></text>
+<text y="514" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">creator DefcyKc4yAjRsCLZjdxWuSUzVohXtLna9g22y3pBCm2z first seen</tspan></text>
+<text y="533" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">2025-02-14T21:36:54Z, 0.0 hours before creation, with 1 earlier transaction</tspan></text>
+<text y="552" xml:space="preserve"></text>
+<text y="571" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0"> </tspan><tspan x="30.4" fill="#af87ff" font-weight="700">FACTS</tspan></text>
+<text y="590" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">name                          </tspan><tspan x="290.8" fill="#d0d0d0">   LIBRA</tspan></text>
+<text y="609" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">symbol                        </tspan><tspan x="290.8" fill="#d0d0d0">   LIBRA</tspan></text>
+<text y="628" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">token program                 </tspan><tspan x="290.8" fill="#d0d0d0">   SPL Token</tspan></text>
+<text y="647" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">created at                    </tspan><tspan x="290.8" fill="#d0d0d0">   2025-02-14T21:37:49Z</tspan></text>
+<text y="666" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">launchpad                     </tspan><tspan x="290.8" fill="#d0d0d0">   </tspan><tspan x="316.0" fill="#8a8a8a">none</tspan></text>
+<text y="685" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">price usd                     </tspan><tspan x="290.8" fill="#d0d0d0">   0.002575</tspan></text>
+<text y="704" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">liquidity usd                 </tspan><tspan x="290.8" fill="#d0d0d0">   5,348.35</tspan></text>
+<text y="723" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#bcbcbc">holder count                  </tspan><tspan x="290.8" fill="#d0d0d0">   21,724</tspan></text>
+<text y="742" xml:space="preserve"></text>
+<text y="761" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0"> </tspan><tspan x="30.4" fill="#af87ff" font-weight="700">SOURCES</tspan></text>
+<text y="780" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Solana RPC                    </tspan><tspan x="307.6" fill="#d0d0d0"> </tspan><tspan x="316.0" fill="#8a8a8a">https://mainnet.helius-rpc.com</tspan></text>
+<text y="799" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">Helius                        </tspan><tspan x="307.6" fill="#d0d0d0"> </tspan><tspan x="316.0" fill="#8a8a8a">https://api-mainnet.helius-rpc.com</tspan></text>
+<text y="818" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">GeckoTerminal                 </tspan><tspan x="307.6" fill="#d0d0d0"> </tspan><tspan x="316.0" fill="#8a8a8a">https://api.geckoterminal.com</tspan></text>
+<text y="837" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#8a8a8a">•</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">DEX Screener                  </tspan><tspan x="307.6" fill="#d0d0d0"> </tspan><tspan x="316.0" fill="#8a8a8a">https://api.dexscreener.com</tspan></text>
+<text y="856" xml:space="preserve"></text>
+<text y="875" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0"> </tspan><tspan x="30.4" fill="#af87ff" font-weight="700">NOT CHECKED OR INCOMPLETE</tspan></text>
+<text y="894" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#ffd75f">!</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">launchpad</tspan></text>
+<text y="913" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">no program in the creation transaction is listed in references/launchpads.md</tspan></text>
+<text y="932" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">  </tspan><tspan x="38.8" fill="#ffd75f">!</tspan><tspan x="47.2" fill="#d0d0d0"> </tspan><tspan x="55.6" fill="#bcbcbc">LP burned with the Burn instruction</tspan></text>
+<text y="951" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">burning lowers LP supply; without the starting supply the burned share cannot be</tspan></text>
+<text y="970" xml:space="preserve"><tspan x="22.0" fill="#d0d0d0">      </tspan><tspan x="72.4" fill="#8a8a8a">measured</tspan></text>
+</g>
+</svg>

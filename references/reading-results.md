@@ -42,8 +42,22 @@ What each field and signal means, and what it does not mean.
 - `scope`: `token, all pools` (Birdeye) or `most liquid pool` (GeckoTerminal).
   A single pool can differ from the overall price, especially for thin pools.
 - `change_pct`: first close to last close in the returned candles only.
+- `range_high`, `range_low`: the highest and lowest price in the returned
+  candles. They are all-time values only when `covers_full_history` is `true`.
+- `covers_full_history`: `true` when the candles start within one interval of
+  the pool's creation; `false` when they start later (GeckoTerminal's free API
+  stops at 180 days); `null` when the pool's creation time is unknown. On the
+  free path it covers one pool only: a graduated coin traded on its bonding
+  curve before that pool existed, and that trading is not included.
 - `market_cap_usd`, `fdv_usd`: current values from GeckoTerminal. Past market
   cap is not available; it is not close multiplied by today's supply.
+
+## Budget errors
+
+Every request counts against a shared budget: 200 requests per source per
+hour by default (`MINT_MAX_CALLS_PER_HOUR`), and at most 150 per script
+run. An error saying the budget is used up is a safety stop, not a source
+failure. Stop and tell the user; it resets within the hour.
 
 ## pools
 
@@ -88,12 +102,3 @@ Each signal has `status`: `found`, `not found`, `not checked` or
 
 `not found` only covers what was checked: "the mint authority is revoked" is
 one fact, not a clean bill of health.
-
-## endorsement
-
-- `status`: `endorsed`, `disavowed`, `mixed` (artists disagree) or `no record`.
-- Each record is one Artist Passport's word on this mint, with the artist ID,
-  the passport's age, its proof kinds and whether riff revoked it.
-- `no record` means no passport has spoken about this mint. It says nothing
-  about the token itself.
-- Records come from devnet until the passport program is on mainnet.

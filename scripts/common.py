@@ -17,19 +17,23 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.1.0"
-SKILL_DIR = Path(__file__).resolve().parent.parent
-REFERENCES = SKILL_DIR / "references"
-CONFIG_FILE = (Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
-               / "solana-token-intel" / ".env")
-CONFIG_VARS = ("SOLANA_RPC_URL", "HELIUS_API_KEY", "BIRDEYE_API_KEY", "PASSPORT_RPC_URL")
+VERSION = "0.2.0"
+PLUGIN_ROOT = Path(__file__).resolve().parent.parent
+REFERENCES = PLUGIN_ROOT / "references"
+_CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+CONFIG_FILE = _CONFIG_HOME / "mint-solana" / ".env"
+OLD_CONFIG_FILE = _CONFIG_HOME / "solana-token-intel" / ".env"  # v0.1 location, still read
+CONFIG_VARS = ("SOLANA_RPC_URL", "HELIUS_API_KEY", "BIRDEYE_API_KEY", "MINT_MAX_CALLS_PER_HOUR")
+USAGE_FILE = CONFIG_FILE.parent / "usage.json"
+DEFAULT_HOURLY_BUDGET = 200  # requests per source per hour, shared by every run
+RUN_CAP = 150                # requests per script run, whatever the budget says
+RETRYABLE = (429, 500, 502, 503, 504, "network")
 PUBLIC_RPC = "https://api.mainnet-beta.solana.com"
-DEVNET_RPC = "https://api.devnet.solana.com"
 HELIUS_API = "https://api-mainnet.helius-rpc.com/v0"
 BIRDEYE_API = "https://public-api.birdeye.so"
 GECKO_API = "https://api.geckoterminal.com/api/v2"
 DEXSCREENER_API = "https://api.dexscreener.com"
-USER_AGENT = f"solana-token-intel/{VERSION}"  # DEX Screener rejects Python's default agent
+USER_AGENT = f"mint-solana/{VERSION}"  # DEX Screener rejects Python's default agent
 
 SPL_TOKEN = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 TOKEN_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
@@ -41,6 +45,10 @@ BURN_ADDRESS = "1nc1nerator11111111111111111111111111111111"
 class SourceError(Exception):
     """A data source failed. The message is already safe to show."""
 
+    def __init__(self, message, status=None):
+        super().__init__(message)
+        self.status = status  # HTTP code, "network", "budget" or None
+
 
 # ---------------------------------------------------------------- config
 
@@ -48,7 +56,8 @@ def config():
     """Environment variables win over the config file. Only our own variables are read."""
     values = {}
     try:
-        for line in CONFIG_FILE.read_text().splitlines():
+        source = CONFIG_FILE if CONFIG_FILE.exists() else OLD_CONFIG_FILE
+        for line in source.read_text().splitlines():
             key, sep, value = line.strip().partition("=")
             if sep and key.strip() in CONFIG_VARS:
                 values[key.strip()] = value.strip().strip("'\"")
@@ -77,28 +86,78 @@ def host(url):
 
 # ------------------------------------------------------------------ HTTP
 
+_run_calls = 0
+
+
+def hourly_budget():
+    try:
+        return max(1, int(config()["MINT_MAX_CALLS_PER_HOUR"] or DEFAULT_HOURLY_BUDGET))
+    except ValueError:
+        return DEFAULT_HOURLY_BUDGET
+
+
+def usage(now=None):
+    """{hostname: [request times in the last hour]} from the shared counter file."""
+    now = now or time.time()
+    try:
+        data = json.loads(USAGE_FILE.read_text())
+    except (OSError, ValueError):
+        data = {}
+    if not isinstance(data, dict):
+        return {}
+    return {h: [t for t in ts if isinstance(t, (int, float)) and now - t < 3600]
+            for h, ts in data.items() if isinstance(ts, list)}
+
+
+def spend(url):
+    """Count one request against the per-run cap and the shared hourly budget, or refuse it.
+    This stops a runaway loop of lookups from hammering a source or burning API credits."""
+    global _run_calls
+    name = urllib.parse.urlsplit(url).hostname or "unknown"
+    if _run_calls >= RUN_CAP:
+        raise SourceError(f"stopped: this run already made {RUN_CAP} requests (safety cap)", "budget")
+    now = time.time()
+    used = usage(now)
+    stamps = used.setdefault(name, [])
+    limit = hourly_budget()
+    if len(stamps) >= limit:
+        wait = int((min(stamps) + 3600 - now) / 60) + 1
+        raise SourceError(f"hourly budget for {name} is used up ({limit} requests/hour). Try again in about "
+                          f"{wait} min, or raise MINT_MAX_CALLS_PER_HOUR (/mint:setup)", "budget")
+    stamps.append(round(now, 1))
+    _run_calls += 1
+    # shortcut: read-modify-write without a file lock, so parallel runs can undercount a little; add a lock if lookups ever run in parallel.
+    try:
+        USAGE_FILE.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        USAGE_FILE.write_text(json.dumps(used))
+    except OSError:
+        pass  # unwritable home: the per-run cap still applies
+
+
 def http_json(url, *, data=None, headers=None, retries=5, timeout=30):
-    """GET (or POST when data is given) JSON with backoff on 429 and 5xx."""
+    """GET (or POST when data is given) JSON with backoff on 429 and 5xx. Every attempt is budgeted."""
     body = json.dumps(data).encode() if data is not None else None
     head = {"accept": "application/json", "user-agent": USER_AGENT}
     if body:
         head["content-type"] = "application/json"
     head.update(headers or {})
     for attempt in range(retries + 1):
+        spend(url)
         try:
             with urllib.request.urlopen(urllib.request.Request(url, body, head), timeout=timeout) as r:
                 return json.loads(r.read())
         except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 504) and attempt < retries:
+            if e.code in RETRYABLE and attempt < retries:
                 time.sleep(_retry_after(e.headers.get("retry-after"), attempt))
                 continue
-            note = " (rate limited, retries used up)" if e.code == 429 else ""
-            raise SourceError(f"{host(url)} returned HTTP {e.code}{note}") from None
+            note = " (rate limited)" if e.code == 429 else ""
+            raise SourceError(f"{host(url)} returned HTTP {e.code}{note}", e.code) from None
         except (urllib.error.URLError, TimeoutError, ConnectionError, json.JSONDecodeError) as e:
             if attempt < retries:
                 time.sleep(2 ** attempt)
                 continue
-            raise SourceError(f"{host(url)} could not be reached: {redact(getattr(e, 'reason', e))}") from None
+            raise SourceError(f"{host(url)} could not be reached: {redact(getattr(e, 'reason', e))}",
+                              "network") from None
 
 
 def _retry_after(header, attempt):
@@ -114,24 +173,28 @@ def rpc_url():
 
 
 def rpc(method, params, url=None, retries=4):
-    """One JSON-RPC call. Some RPCs report rate limits inside a 200 response."""
+    """One JSON-RPC call, at most retries + 1 attempts in total. Some RPCs report
+    rate limits inside a 200 response, so both kinds share one retry loop."""
     url = url or rpc_url()
-    hint = "; set SOLANA_RPC_URL to a private RPC (run: cli.py setup)" if url == PUBLIC_RPC else ""
+    hint = "; set SOLANA_RPC_URL to a private RPC (/mint:setup)" if url == PUBLIC_RPC else ""
     for attempt in range(retries + 1):
         try:
-            reply = http_json(url, data={"jsonrpc": "2.0", "id": 1, "method": method, "params": params},
-                              retries=retries)
+            reply = http_json(url, data={"jsonrpc": "2.0", "id": 1, "method": method, "params": params}, retries=0)
         except SourceError as e:
-            raise SourceError(f"RPC {method}: {e}{hint if '429' in str(e) else ''}") from None
+            if e.status in RETRYABLE and attempt < retries:
+                time.sleep(_retry_after(None, attempt))
+                continue
+            raise SourceError(f"RPC {method}: {e}{hint if e.status == 429 else ''}", e.status) from None
         error = reply.get("error")
         if not error:
             return reply.get("result")
-        if error.get("code") in (429, -32429) and attempt < retries:
-            time.sleep(2 ** attempt)
+        limited = isinstance(error, dict) and error.get("code") in (429, -32429)
+        if limited and attempt < retries:
+            time.sleep(_retry_after(None, attempt))
             continue
-        limited = error.get("code") in (429, -32429)
-        raise SourceError(f"RPC {method} on {host(url)} failed: {redact(error.get('message', error))}"
-                          f"{hint if limited else ''}")
+        message = error.get("message", error) if isinstance(error, dict) else error
+        raise SourceError(f"RPC {method} on {host(url)} failed: {redact(message)}{hint if limited else ''}",
+                          429 if limited else None)
 
 
 def accounts(addresses, url=None, encoding="base64"):
@@ -287,14 +350,12 @@ PALETTE = {
     "accent": "38;5;117",    # light blue: addresses, values to notice
     "label": "38;5;250",     # light grey: keys and column heads
     "muted": "38;5;244",     # grey: hints, secondary text
-    "ok": "38;5;114",        # green: check passed, set, endorsed
+    "ok": "38;5;114",        # green: check passed, set
     "warn": "38;5;221",      # amber: signal found, partial, not set
     "bad": "38;5;203",       # red: failed, disavowed
 }
 # Values that always get the same color wherever they appear.
 VALUE_ROLES = {"found": "warn", "not found": "muted", "not checked": "muted", "not applicable": "muted",
-               "mixed": "warn",
-               "endorsed": "ok", "disavowed": "bad", "no record": "muted",
                "wallet": "label", "program account": "accent"}
 
 
@@ -330,7 +391,7 @@ def width():
 
 def banner(title, subtitle=""):
     print()
-    print(f" {paint(MARK['brand'], 'brand')} {paint('solana-token-intel', 'brand')}  {paint(title, 'label')}"
+    print(f" {paint(MARK['brand'], 'brand')} {paint('mint', 'brand')}  {paint(title, 'label')}"
           + (f"  {paint(subtitle, 'accent')}" if subtitle else ""))
     print(" " + paint(RULE * (width() - 2), "muted"))
 
@@ -341,7 +402,7 @@ def heading(text):
 
 def line(role, label, value="", note=""):
     """One status row: mark, label, value, note. Every screen uses this."""
-    label = f"{label:<22}" if value or note else label
+    label = f"{label:<30}" if value or note else label  # same label column as kv()
     print(f"  {paint(MARK[role], role)} {paint(label, 'label')} {value}"
           + (f"  {paint(note, 'muted')}" if note else ""))
 
@@ -359,7 +420,7 @@ def note(role, title, detail, tag=""):
 
 
 def kv(key, value, indent=2):
-    print(" " * indent + paint(f"{key.replace('_', ' '):<30}", "label") + " " + fmt(value))
+    print(" " * indent + paint(f"{key.replace('_', ' '):<30}", "label") + "   " + fmt(value))
 
 
 def fmt(value):

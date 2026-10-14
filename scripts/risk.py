@@ -134,7 +134,8 @@ def creator_signal(od):
     hours = (parse(od["created_at"]) - parse(od["creator_first_seen"])).total_seconds() / 3600
     return signal("new_creator_wallet", label, "found" if hours < NEW_WALLET_HOURS else "not found",
                   f"creator {od['creator']} first seen {od['creator_first_seen']}, {hours:,.1f} hours before "
-                  f"creation, with {od['creator_prior_tx_count']} earlier transactions", threshold)
+                  f"creation, with {od['creator_prior_tx_count']} earlier transaction"
+                  f"{'' if od['creator_prior_tx_count'] == 1 else 's'}", threshold)
 
 
 def collect(mint, result, args):

@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+"""mint: read-only Solana token lookups.
+
+Lookups (each prints one JSON object; add --pretty to read it yourself):
+  mint risk <mint>       risk signals with evidence (runs the four below)
+  mint overview <mint>   supply, authorities, Token-2022 extensions, metadata
+  mint origin <mint>     creator, creation time, launchpad
+  mint pools <mint>      pools, liquidity, LP burned or held
+  mint holders <mint>    largest holders, holder count
+  mint history <mint>    price candles (--interval 1m..1d, --limit up to 1000)
+
+Setup:
+  mint keys              create your private keys file, show which keys are set
+  mint setup             type your keys in a terminal (input stays hidden)
+  mint doctor            check sources and this hour's usage
+"""
+
+import os
+import sys
+from pathlib import Path
+
+SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+LOOKUPS = ("risk", "overview", "origin", "pools", "holders", "history")
+TOOLS = ("keys", "setup", "doctor")
+
+command, rest = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("help", [])
+if command in LOOKUPS:
+    target = [str(SCRIPTS / f"{command}.py"), *rest]
+elif command in TOOLS:
+    target = [str(SCRIPTS / "cli.py"), command, *rest]
+else:
+    print(__doc__)
+    sys.exit(0 if command in ("help", "-h", "--help") else 2)
+os.execv(sys.executable, [sys.executable, *target])

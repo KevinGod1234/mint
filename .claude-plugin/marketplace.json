@@ -1,12 +1,12 @@
 {
-  "name": "solana-token-intel",
+  "name": "mint",
   "description": "Solana token lookups for Claude Code",
   "owner": { "name": "Kevin Fransman", "url": "https://github.com/KevinGod1234" },
   "plugins": [
     {
-      "name": "solana-token-intel",
+      "name": "mint",
       "source": "./",
-      "description": "Look up any Solana token: make-up, origin, prices, pools, holders, risk signals, Artist Passport endorsements."
+      "description": "Look up any Solana token: make-up, origin, prices, pools, holders and risk signals."
     }
   ]
 }

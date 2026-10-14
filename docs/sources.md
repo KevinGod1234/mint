@@ -7,9 +7,9 @@ Last full check: **2026-10-14**.
 
 ## Solana public RPC
 
-- **Used by:** every script without `SOLANA_RPC_URL`; `endorsement.py` on devnet.
+- **Used by:** every lookup when `SOLANA_RPC_URL` is not set.
 - **Endpoints:** `https://api.mainnet-beta.solana.com` (also served as
-  `api.mainnet.solana.com`), `https://api.devnet.solana.com`.
+  `api.mainnet.solana.com`).
 - **Limits** (solana.com/docs/references/clusters, 2026-10-14): 100 requests
   per 10 s per IP, 40 per 10 s for one method, 40 connections, 100 MB per 30 s.
 - **Terms:** "not intended for production applications"; IPs can be blocked
@@ -56,6 +56,10 @@ Last full check: **2026-10-14**.
   - `/networks/solana/pools/{pool}/ohlcv/{day|hour|minute}?aggregate=…&limit=≤1000&currency=usd&token={mint}`
     (aggregate: day 1; hour 1, 4, 12; minute 1, 5, 15). Newest candle first.
   - `/networks/solana/tokens/{mint}/info`: `holders.count`, `distribution_percentage`
+- **History depth:** the keyless API only serves the past 180 days. Asking
+  for older candles with `before_timestamp` returns 401: "You can only access
+  data from the past 180 days with Public API" (tested 2026-10-15). A request
+  for 1,000 daily candles quietly returns about 183.
 - **Limits:** 30 calls/min for the keyless API (GeckoTerminal FAQ and CoinGecko
   help centre, 2026-10-14). No authentication.
 - **Terms:** the keyless API is covered by CoinGecko's API terms
@@ -75,18 +79,11 @@ Last full check: **2026-10-14**.
   2023-08-18): commercial and non-commercial use allowed; no reselling or
   building a direct competitor; no attribution clause.
 - **Note:** requests with Python's default user agent get 403. Scripts send
-  `solana-token-intel/<version>`.
+  `mint-solana/<version>`.
 
-## Artist Passport (riff)
+## Artist Passport
 
-- **Used by:** `endorsement.py`.
-- **IDL:** github.com/use-riff/riff, `idl/riff_passport.json`, copied to
-  `skills/solana-token-intel/references/riff_passport.json` on 2026-10-14
-  (version 0.1.0). Program `2nke6euXvAnbtdtcbbk8N2Z3SRLuR7i67VYmSdcY5kwj`.
-- **Deployed:** devnet yes (executable, 2026-10-14); mainnet no.
-- **Lookup:** `getProgramAccounts` with the `Endorsement` discriminator at
-  offset 0 and the mint at offset 40, then the `Passport` accounts. Layouts are
-  decoded from the IDL, so a new IDL version only needs the file replaced.
+Removed in v0.2.0 (2026-10-15): of little value to most users.
 
 ## Similar tools (checked 2026-10-14)
 
@@ -94,4 +91,4 @@ MCP servers exist for Solana token risk: kukapay/rug-check-mcp (wraps the
 Solsniffer API, needs its key), Noesis (hosted, holder analysis), and hosted
 rug-check endpoints. No Claude Code skill was found. This one differs: it runs
 locally on free sources with optional keys, shows its sources and gaps,
-reports facts instead of a score, and adds Artist Passport endorsements.
+reports facts instead of a score, and caps its own request rate.

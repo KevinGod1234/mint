@@ -3,6 +3,8 @@ Run: python3 -m unittest discover tests"""
 
 import io
 import json
+import tempfile
+import time
 import sys
 import unittest
 from contextlib import redirect_stdout
@@ -10,10 +12,9 @@ from pathlib import Path
 from unittest import mock
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "skills" / "solana-token-intel" / "scripts"))
+sys.path.insert(0, str(HERE.parent / "scripts"))
 
 import common  # noqa: E402
-import endorsement  # noqa: E402
 import history  # noqa: E402
 import holders  # noqa: E402
 import origin  # noqa: E402
@@ -49,15 +50,9 @@ class Base58AndPda(unittest.TestCase):
         self.assertEqual(pda, fixture("metaplex_usdc.json")["pda"])
         self.assertIsNotNone(account("metaplex_usdc.json"))  # the derived account exists on chain
 
-    def test_endorsement_pda_matches_devnet_account(self):
-        pda = common.find_pda([b"endorse", common.b58decode("ErafhESwQX4Mxv3oa96R6gnrp6yFBFucnyDWLNhxmXfP"),
-                               common.b58decode("DffTqQTB8YsqFMA5gewV7NPau3NRxHj8AsqAGR77UWGt")],
-                              endorsement.PROGRAM)
-        self.assertEqual(pda, "AumZJLNZ3B4KcpP7YGWwkyh4PCuqgdBK6wtpGrFnNHmP")
-
     def test_wallets_are_on_curve(self):
         self.assertTrue(common.on_curve(common.b58decode("DcuQRK8UoqCAEVfKeTx9zNNKv9LwSJFXNkjjKiU7jjDv")))
-        self.assertFalse(common.on_curve(common.b58decode("AumZJLNZ3B4KcpP7YGWwkyh4PCuqgdBK6wtpGrFnNHmP")))
+        self.assertFalse(common.on_curve(common.b58decode(fixture("metaplex_usdc.json")["pda"])))
 
 
 class Overview(unittest.TestCase):
@@ -150,24 +145,6 @@ class Origin(unittest.TestCase):
         self.assertEqual(scanned, 2 * origin.PAGE)
 
 
-class Endorsement(unittest.TestCase):
-    def test_decode_accounts(self):
-        endorse, passport = account("passport_devnet.json")
-        e = endorsement.decode_account("Endorsement", common.account_bytes(endorse))
-        p = endorsement.decode_account("Passport", common.account_bytes(passport))
-        self.assertEqual(e["mint"], "DffTqQTB8YsqFMA5gewV7NPau3NRxHj8AsqAGR77UWGt")
-        self.assertEqual(e["status"], "Endorsed")
-        self.assertEqual(p["artist_id"], "spotify:0RiffPassportDemo00001")
-        self.assertFalse(p["revoked"])
-
-    def test_mint_offset_from_idl(self):
-        self.assertEqual(endorsement.field_offset("Endorsement", "mint"), 40)
-
-    def test_wrong_discriminator(self):
-        with self.assertRaises(ValueError):
-            endorsement.decode_account("Passport", b"\0" * 100)
-
-
 class Holders(unittest.TestCase):
     def test_labels_and_shares(self):
         wallet, pda = "DcuQRK8UoqCAEVfKeTx9zNNKv9LwSJFXNkjjKiU7jjDv", "AumZJLNZ3B4KcpP7YGWwkyh4PCuqgdBK6wtpGrFnNHmP"
@@ -223,7 +200,7 @@ class Risk(unittest.TestCase):
         self.assertEqual(risk.liquidity_signal({"pools": [row]})["status"], "not applicable")
 
     def test_wording_has_no_advice(self):
-        text = (HERE.parent / "skills" / "solana-token-intel" / "scripts" / "risk.py").read_text().lower()
+        text = (HERE.parent / "scripts" / "risk.py").read_text().lower()
         for word in ('"safe', "scam", "buy", "sell", "legit"):
             self.assertNotIn(word, text)
 
@@ -253,6 +230,80 @@ class Output(unittest.TestCase):
             common.render(result)
         self.assertIn("Label", out.getvalue())
         self.assertIn("reason", out.getvalue())
+
+
+class Safety(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        patches = [mock.patch.object(common, "USAGE_FILE", Path(self.tmp.name) / "usage.json"),
+                   mock.patch.object(common, "_run_calls", 0),
+                   mock.patch.object(common, "config", return_value={"MINT_MAX_CALLS_PER_HOUR": "3"}),
+                   mock.patch.object(common.time, "sleep")]
+        for p in patches:
+            p.start()
+            self.addCleanup(p.stop)
+        self.addCleanup(self.tmp.cleanup)
+
+    def test_hourly_budget_refuses_and_is_shared(self):
+        for _ in range(3):
+            common.spend("https://api.geckoterminal.com/x")
+        with self.assertRaises(common.SourceError) as e:
+            common.spend("https://api.geckoterminal.com/y")
+        self.assertEqual(e.exception.status, "budget")
+        common.spend("https://api.dexscreener.com/z")  # other sources have their own budget
+        self.assertEqual(len(common.usage()["api.geckoterminal.com"]), 3)
+
+    def test_old_requests_expire(self):
+        common.USAGE_FILE.write_text(json.dumps({"a.io": [time.time() - 3700] * 5}))
+        common.spend("https://a.io/")
+        self.assertEqual(len(common.usage()["a.io"]), 1)
+
+    def test_run_cap(self):
+        with mock.patch.object(common, "_run_calls", common.RUN_CAP):
+            with self.assertRaises(common.SourceError):
+                common.spend("https://b.io/")
+
+    def test_rpc_attempts_are_bounded(self):
+        calls = []
+
+        def limited(*a, **k):
+            calls.append(1)
+            raise common.SourceError("HTTP 429", 429)
+
+        with mock.patch.object(common, "http_json", side_effect=limited):
+            with self.assertRaises(common.SourceError):
+                common.rpc("getSlot", [], "https://rpc.example", retries=4)
+        self.assertEqual(len(calls), 5)
+
+    def test_budget_errors_are_not_retried(self):
+        calls = []
+
+        def refused(*a, **k):
+            calls.append(1)
+            raise common.SourceError("budget used up", "budget")
+
+        with mock.patch.object(common, "http_json", side_effect=refused):
+            with self.assertRaises(common.SourceError):
+                common.rpc("getSlot", [], "https://rpc.example")
+        self.assertEqual(len(calls), 1)
+
+
+class FullHistory(unittest.TestCase):
+    def test_covers_launch(self):
+        self.assertTrue(history.covers_launch("2026-10-14T21:00:00Z", "2026-10-14T21:30:24Z", "1h"))
+        self.assertFalse(history.covers_launch("2026-04-07T00:00:00Z", "2025-02-14T22:02:29Z", "1d"))
+        self.assertIsNone(history.covers_launch("2026-04-07T00:00:00Z", None, "1d"))
+
+
+class Launcher(unittest.TestCase):
+    def test_help_and_unknown_command(self):
+        import subprocess
+        mint = HERE.parent / "bin" / "mint"
+        ok = subprocess.run([sys.executable, str(mint), "help"], capture_output=True, text=True)
+        self.assertEqual(ok.returncode, 0)
+        self.assertIn("mint risk <mint>", ok.stdout)
+        bad = subprocess.run([sys.executable, str(mint), "nope"], capture_output=True, text=True)
+        self.assertEqual(bad.returncode, 2)
 
 
 if __name__ == "__main__":

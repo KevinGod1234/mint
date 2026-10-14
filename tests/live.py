@@ -11,11 +11,11 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SCRIPTS = ROOT / "skills" / "solana-token-intel" / "scripts"
+SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 from common import banner, heading, line, paint, summary  # noqa: E402
 
-ALL = ["overview", "origin", "history", "pools", "holders", "risk", "endorsement"]
+ALL = ["overview", "origin", "history", "pools", "holders", "risk"]
 
 
 def tokens():
@@ -34,8 +34,7 @@ def main():
     failed = partial = passed = 0
     for kind, name, mint in tokens():
         heading(f"{kind} · {name}")
-        scripts = ["endorsement"] if "devnet" in kind else args.scripts
-        for script in scripts:
+        for script in args.scripts:
             start = time.monotonic()
             run = subprocess.run([sys.executable, str(SCRIPTS / f"{script}.py"), mint], capture_output=True, text=True)
             took = f"{time.monotonic() - start:.1f} s"

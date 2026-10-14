@@ -1,4 +1,8 @@
-# solana-token-intel: plan
+# mint (formerly solana-token-intel): plan
+
+> Status 2026-10-15: v0.2.0 renamed the plugin to `mint`, added `/mint:*`
+> commands, a call budget, and dropped the Artist Passport lookup (of little
+> value to most users). The layout below is the original plan.
 
 An open-source Claude Code skill that lets Claude look up the history and
 make-up of any Solana token: what it is, who made it and where, how its price
