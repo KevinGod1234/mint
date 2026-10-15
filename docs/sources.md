@@ -30,8 +30,17 @@ Last full check: **2026-10-14**.
   a month, 10 requests/s.
 - **Terms:** helius.dev/terms (page reachable 2026-10-14). Users bring their own
   key and plan.
-- **Not exercised with a real key.** A request without a key returns 401, which
-  confirms the endpoint exists; the response parsing follows the docs.
+- **Also used by:** `creator.py`, on the creator wallet: `type=CREATE` with
+  `before-signature` paging (the creator's coins), and `sort-order=asc` with
+  `gt-time` (activity after creation). Tested on mainnet 2026-10-15.
+- **Credits** (helius.dev/docs/billing/credits, 2026-10-15): Enhanced
+  Transactions cost 100 credits per call (the page calls it legacy, in
+  maintenance mode; Parsed Events at 10 credits is named as its successor).
+  So the free plan covers about 10,000 calls a month. `/mint:creator` makes
+  3 to 7 such calls.
+- **Exercised with a real key on 2026-10-15** (origin and creator lookups).
+  Pump.fun creations come back as type `CREATE`, source `PUMP_FUN`; a
+  Streamflow lock can also be typed `CREATE`.
 
 ## Birdeye (optional, `BIRDEYE_API_KEY`)
 
@@ -70,8 +79,10 @@ Last full check: **2026-10-14**.
 
 ## DEX Screener (free, no key)
 
-- **Used by:** `pools.py`.
-- **Endpoint:** `GET https://api.dexscreener.com/token-pairs/v1/solana/{mint}`
+- **Used by:** `pools.py`, and `creator.py` for the creator's coins.
+- **Endpoints:** `GET https://api.dexscreener.com/token-pairs/v1/solana/{mint}`;
+  `GET /tokens/v1/solana/{mint1,mint2,...}` (pairs for many mints in one call;
+  the docs page states no limit, a 22-address call worked 2026-10-15)
   (docs.dexscreener.com/api/reference).
 - **Limits:** not stated for this endpoint on 2026-10-14; other endpoints list
   60/min, pair endpoints are commonly 300/min.
@@ -80,6 +91,24 @@ Last full check: **2026-10-14**.
   building a direct competitor; no attribution clause.
 - **Note:** requests with Python's default user agent get 403. Scripts send
   `mint-solana/<version>`.
+
+## Dune (considered for v0.4.0, not used yet)
+
+- **Planned use:** historical base rates ("of N similar coins, M ...") from
+  SQL over Solana and pump.fun tables.
+- **API access** (docs.dune.com pricing FAQ and api-reference rate-limits
+  page, 2026-10-15): "Free access after the trial is view-only and does not
+  include API access." API use needs a 14-day trial (2,500 credits) or a paid
+  plan. An older Dune blog post says free users get the API; the current docs
+  say otherwise.
+- **Cost:** no fixed rate per execution; credits follow the compute a query
+  uses. Result rows also cost credits.
+- **Terms** (dune.com/sql-api-terms, last updated 2026-05-13): no use that
+  substitutes for the service or competes with Dune; keys must not be put in
+  public repositories or client code. Showing results to end users is not
+  addressed.
+- **Status:** not usable by default, since keyless users get nothing. Waiting
+  on the owner's decision.
 
 ## Artist Passport
 

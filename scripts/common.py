@@ -17,7 +17,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 REFERENCES = PLUGIN_ROOT / "references"
 _CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
@@ -45,9 +45,10 @@ BURN_ADDRESS = "1nc1nerator11111111111111111111111111111111"
 class SourceError(Exception):
     """A data source failed. The message is already safe to show."""
 
-    def __init__(self, message, status=None):
+    def __init__(self, message, status=None, body=""):
         super().__init__(message)
         self.status = status  # HTTP code, "network", "budget" or None
+        self.body = body      # start of the error response, redacted; some sources explain themselves there
 
 
 # ---------------------------------------------------------------- config
@@ -151,7 +152,8 @@ def http_json(url, *, data=None, headers=None, retries=5, timeout=30):
                 time.sleep(_retry_after(e.headers.get("retry-after"), attempt))
                 continue
             note = " (rate limited)" if e.code == 429 else ""
-            raise SourceError(f"{host(url)} returned HTTP {e.code}{note}", e.code) from None
+            raise SourceError(f"{host(url)} returned HTTP {e.code}{note}", e.code,
+                              redact(e.read(1000).decode(errors="replace"))) from None
         except (urllib.error.URLError, TimeoutError, ConnectionError, json.JSONDecodeError) as e:
             if attempt < retries:
                 time.sleep(2 ** attempt)

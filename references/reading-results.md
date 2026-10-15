@@ -52,6 +52,30 @@ What each field and signal means, and what it does not mean.
 - `market_cap_usd`, `fdv_usd`: current values from GeckoTerminal. Past market
   cap is not available; it is not close multiplied by today's supply.
 
+## creator
+
+- `creator`, `created_at`, `launchpad`: from `origin` (same caveats: the fee
+  payer is usually, not always, the launcher).
+- `coins_found`, `coins_priced`: coins found, and how many of them were priced.
+  `coins_without_pools` counts among the priced ones.
+- `coins`: coins this wallet created, newest first, from Helius transactions
+  typed `CREATE` (up to 5 Helius search windows; the 30 newest are priced). Seen for pump.fun;
+  coins made on other launchpads may be missing. `status: no pools listed`
+  means DEX Screener lists no pool now, not that the coin was a scam.
+  `liquidity_usd` is often `null` for coins still on a bonding curve.
+- `this_coin.peak_*`: the highest candle high in the most liquid pool
+  (see `history`). A true all-time peak only when `peak_covers_full_history`
+  is `true`.
+- `creator_moves`: this coin going in and out of the creator wallet from
+  creation on. `kind`: `received`; `sold` (Helius typed it a swap);
+  `sent to pool` (sent to one of this coin's pool addresses, which is how
+  trading tools often sell; the SOL can come back in a separate transaction);
+  `sent` (to another wallet, which can be the creator's own).
+  `hours_from_peak` is negative before the peak.
+- `activity_complete: false`: the creator had more than 300 transactions
+  after creation; later moves are not included. `creator_holds_now` is
+  always current.
+
 ## Budget errors
 
 Every request counts against a shared budget: 200 requests per source per

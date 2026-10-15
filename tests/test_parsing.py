@@ -15,6 +15,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "scripts"))
 
 import common  # noqa: E402
+import creator  # noqa: E402
 import history  # noqa: E402
 import holders  # noqa: E402
 import origin  # noqa: E402
@@ -203,6 +204,49 @@ class Risk(unittest.TestCase):
         text = (HERE.parent / "scripts" / "risk.py").read_text().lower()
         for word in ('"safe', "scam", "buy", "sell", "legit"):
             self.assertNotIn(word, text)
+
+
+class Creator(unittest.TestCase):
+    MINT, WALLET, CURVE = ("3apEwET6mR5ZS7ypiPJuaRYBYzvort8vqfaSgmjupump", "B3ZSJaxg3fmrZJaphu5D1PjzMJH9dKP25AJNjgY3uzTv",
+                           "3v4PDEHuPiZp8Msv2Xnw5aLBEwhUgmFPsTjVPc3GvJ6Q")
+
+    def test_created_mint_skips_route_token(self):
+        tx = fixture("helius_create_router.json")[0]  # bought through another token (DOPE) in the same tx
+        self.assertEqual(creator.created_mint(tx), self.MINT)
+
+    def test_repeated_mint_listed_once_with_oldest_date(self):
+        tx = fixture("helius_create_router.json")[0]
+        later = dict(tx, timestamp=tx["timestamp"] + 60, source="STREAMFLOW_TIMELOCK")
+        with mock.patch.object(creator, "http_json", side_effect=[[later, tx], []]):
+            coins = creator.creator_coins(self.WALLET, "k", common.Result("creator", self.MINT))
+        self.assertEqual([(c["mint"], c["helius_source"]) for c in coins], [(self.MINT, "PUMP_FUN")])
+
+    def test_empty_search_window_continues(self):
+        sig = "4" * 88
+        empty = common.SourceError("HTTP 404", 404, '{"error":"Failed to find events within the search period. To '
+                                   f'continue search, query the API again with the `before-signature` parameter set to {sig}."}}')
+        calls = []
+        replies = iter([empty, fixture("helius_create_router.json"), []])
+
+        def fake(url):
+            calls.append(url)
+            reply = next(replies)
+            if isinstance(reply, Exception):
+                raise reply
+            return reply
+        with mock.patch.object(creator, "http_json", side_effect=fake):
+            coins = creator.creator_coins(self.WALLET, "k", common.Result("creator", self.MINT))
+        self.assertIn(f"before-signature={sig}", calls[1])
+        self.assertEqual([c["mint"] for c in coins], [self.MINT])
+
+    def test_moves_to_a_pool_are_labelled(self):
+        with mock.patch.object(creator, "http_json", return_value=fixture("helius_creator_moves.json")):
+            moves, done, _ = creator.creator_moves(self.MINT, self.WALLET, 0, {self.CURVE}, "k",
+                                                   common.Result("creator", self.MINT))
+        self.assertTrue(done)
+        self.assertEqual([m["kind"] for m in moves], ["received"] + ["sent to pool"] * 5)
+        self.assertEqual(creator.move_kind(True, "TRANSFER", "elsewhere", {self.CURVE}), "sent")
+        self.assertEqual(creator.move_kind(True, "SWAP", self.CURVE, {self.CURVE}), "sold")
 
 
 class Output(unittest.TestCase):

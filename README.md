@@ -41,6 +41,7 @@ That is all. No keys needed to start.
 | --- | --- |
 | `/mint:check <mint>` | The full picture: what the token is, origin, liquidity, holders, risk signals with evidence, and what could not be checked |
 | `/mint:price <mint> [interval]` | Price history, change over the range, highs and lows, and whether they reach back to launch |
+| `/mint:creator <mint>` | The creator's other coins and how each stands now, and when the creator sold or moved this one relative to its peak |
 | `/mint:holders <mint>` | Largest holders and their share, with pools and vaults kept apart from wallets |
 | `/mint:setup` | Creates your private keys file and shows how to add keys |
 | `/mint:doctor` | Checks every data source, your keys, and this hour's request budget |
@@ -62,6 +63,7 @@ available from any free source. Every answer lists what is missing and why.
 | Pools, liquidity, LP model, fully burned LP | Yes | |
 | Holder count, top-10 share (pools included) | Yes, once GeckoTerminal has indexed the token | |
 | Creator, creation time, launchpad | Young tokens only. Older ones stop after 10,000 transactions | Yes, with Helius |
+| Creator's other coins, creator sells | No. Creator, peak and current balance only | Yes, with Helius |
 | Price and volume candles | Past 180 days, most liquid pool | All pools, with Birdeye (depth not yet verified) |
 | All-time high and low | Only for tokens under 180 days old, one pool | Possibly, with Birdeye |
 | Top 20 holders, pools labelled | No. The public RPC refuses the call | Yes, with a private RPC |
