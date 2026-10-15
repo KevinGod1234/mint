@@ -92,6 +92,20 @@ Last full check: **2026-10-14**.
 - **Note:** requests with Python's default user agent get 403. Scripts send
   `mint-solana/<version>`.
 
+## mint-data (free, no key)
+
+- **Used by:** `outcomes.py`, which reads `data/summary.json` from
+  `raw.githubusercontent.com/KevinGod1234/mint-data/main/`.
+- **What it is:** our own dataset. A GitHub Action samples new pump.fun
+  coins every 6 hours (Helius, `type=CREATE` on the pump.fun program) and
+  measures them on-chain only: the bonding curve `complete` flag and the
+  mint's latest transaction. No third-party price data, because DEX
+  Screener's terms forbid making its data available to third parties and
+  GeckoTerminal's terms (2025-08-11) allow only non-commercial
+  republication while also restricting distribution. Checked 2026-10-15.
+- **Limits:** GitHub raw files are served without a key; the summary is one
+  small request.
+
 ## Dune (considered for v0.4.0, not used yet)
 
 - **Planned use:** historical base rates ("of N similar coins, M ...") from

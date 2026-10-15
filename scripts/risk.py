@@ -7,6 +7,7 @@ from datetime import datetime
 
 import holders
 import origin
+import outcomes
 import overview
 import pools
 from common import Result, SourceError, script
@@ -157,6 +158,7 @@ def collect(mint, result, args):
             "holder_count": hd.get("holder_count"),
         },
     }
+    outcomes.save_sample(mint, od.get("created_at"))
 
 
 def add_args(parser):

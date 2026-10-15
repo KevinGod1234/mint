@@ -15,7 +15,7 @@ SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 from common import banner, heading, line, paint, summary  # noqa: E402
 
-ALL = ["overview", "origin", "history", "pools", "holders", "risk", "creator"]
+ALL = ["overview", "origin", "history", "pools", "holders", "risk", "creator", "outcomes"]
 
 
 def tokens():

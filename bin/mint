@@ -9,6 +9,7 @@ Lookups (each prints one JSON object; add --pretty to read it yourself):
   mint holders <mint>    largest holders, holder count
   mint history <mint>    price candles (--interval 1m..1d, --limit up to 1000)
   mint creator <mint>    creator's other coins, and their sells of this one
+  mint outcomes <mint>   what happened to similar coins at 1, 7 and 30 days
 
 Setup:
   mint keys              create your private keys file, show which keys are set
@@ -21,7 +22,7 @@ import sys
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
-LOOKUPS = ("risk", "overview", "origin", "pools", "holders", "history", "creator")
+LOOKUPS = ("risk", "overview", "origin", "pools", "holders", "history", "creator", "outcomes")
 TOOLS = ("keys", "setup", "doctor")
 
 command, rest = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("help", [])

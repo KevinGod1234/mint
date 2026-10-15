@@ -19,6 +19,7 @@ import creator  # noqa: E402
 import history  # noqa: E402
 import holders  # noqa: E402
 import origin  # noqa: E402
+import outcomes  # noqa: E402
 import overview  # noqa: E402
 import pools  # noqa: E402
 import risk  # noqa: E402
@@ -240,13 +241,44 @@ class Creator(unittest.TestCase):
         self.assertEqual([c["mint"] for c in coins], [self.MINT])
 
     def test_moves_to_a_pool_are_labelled(self):
-        with mock.patch.object(creator, "http_json", return_value=fixture("helius_creator_moves.json")):
-            moves, done, _ = creator.creator_moves(self.MINT, self.WALLET, 0, {self.CURVE}, "k",
-                                                   common.Result("creator", self.MINT))
+        with mock.patch.object(creator, "http_json", return_value=fixture("helius_creator_moves.json")) as get:
+            moves, done, _ = creator.creator_moves(self.MINT, self.WALLET, creator.origin_ts(
+                {"created_at": "2026-10-14T23:57:29Z"}), {self.CURVE}, "k", common.Result("creator", self.MINT))
+        self.assertIn("gt-time=1792022248&", get.call_args[0][0] + "&")  # whole seconds; Helius rejects 1792022248.0
         self.assertTrue(done)
         self.assertEqual([m["kind"] for m in moves], ["received"] + ["sent to pool"] * 5)
         self.assertEqual(creator.move_kind(True, "TRANSFER", "elsewhere", {self.CURVE}), "sent")
         self.assertEqual(creator.move_kind(True, "SWAP", self.CURVE, {self.CURVE}), "sold")
+
+
+class Outcomes(unittest.TestCase):
+    def test_due_only_inside_each_window(self):
+        made = common.from_iso("2026-10-01T00:00:00Z")
+        record = {"created_at": "2026-10-01T00:00:00Z"}
+        self.assertEqual(outcomes.due(record, made + 0.5 * 86400), [])
+        self.assertEqual(outcomes.due(record, made + 1.5 * 86400), ["d1"])
+        self.assertEqual(outcomes.due(record, made + 3 * 86400), [])        # d1 window missed: stays empty
+        self.assertEqual(outcomes.due(dict(record, d7={}), made + 8 * 86400), [])
+        self.assertEqual(outcomes.due(record, made + 40 * 86400), ["d30"])
+
+    def test_outcome_and_summary(self):
+        now = common.from_iso("2026-10-02T12:00:00Z")
+        record = {"created_at": "2026-10-01T00:00:00Z"}
+        live = outcomes.outcome({"graduated": True, "last_activity_at": "2026-10-02T00:00:00Z"}, record, now)
+        dead = outcomes.outcome({"graduated": False, "last_activity_at": "2026-10-01T01:00:00Z"}, record, now)
+        self.assertEqual((live["age_days"], live["active_24h"], dead["active_24h"]), (1.5, True, False))
+        rows = outcomes.summarize([dict(record, d1=live), dict(record, d1=dead), record])
+        self.assertEqual(rows["d1"], {"n": 2, "graduated": 1, "active_24h": 1})
+        self.assertEqual(rows["d7"]["n"], 0)
+
+    def test_samples_saved_once_and_private(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(outcomes, "SAMPLES_FILE", Path(tmp) / "samples.jsonl"):
+            outcomes.save_sample(USDC, "2026-10-01T00:00:00Z")
+            outcomes.save_sample(USDC, "2026-10-01T00:00:00Z")
+            outcomes.save_sample("other", None)                              # no creation time: skipped
+            self.assertEqual([r["mint"] for r in outcomes.load_samples()], [USDC])
+            self.assertEqual(outcomes.SAMPLES_FILE.stat().st_mode & 0o777, 0o600)
 
 
 class Output(unittest.TestCase):

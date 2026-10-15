@@ -2,14 +2,14 @@
 """The creator's track record: their other coins and how each stands now,
 and what the creator did with this coin after making it, next to its peak."""
 
-import calendar
 import re
 import time
 from argparse import Namespace
 
 import history
 import origin
-from common import DEXSCREENER_API, HELIUS_API, SourceError, config, http_json, iso, rpc, rpc_url, script
+import outcomes
+from common import DEXSCREENER_API, HELIUS_API, SourceError, config, from_iso, http_json, iso, rpc, rpc_url, script
 from risk import run
 
 WSOL = "So11111111111111111111111111111111111111112"
@@ -169,23 +169,20 @@ def collect(mint, result, args):
         moves, complete, checked_to = creator_moves(mint, creator, origin_ts(od), pools.get(mint, set()), key, result)
         total = lambda kind: round(sum(m["amount"] or 0 for m in moves if m["kind"] == kind), 6)
         if peak:
-            peak_ts = parse_ts(peak["time"])
+            peak_ts = from_iso(peak["time"])
             for m in moves:
-                m["hours_from_peak"] = round((parse_ts(m["time"]) - peak_ts) / 3600, 2)
+                m["hours_from_peak"] = round((from_iso(m["time"]) - peak_ts) / 3600, 2)
         data["this_coin"].update(creator_received=total("received"), creator_sold=total("sold"),
                                  creator_sent_to_pool=total("sent to pool"), creator_sent=total("sent"),
                                  activity_complete=complete, activity_checked_to=checked_to, creator_moves=moves)
     except SourceError as e:
         result.miss("creator sells of this coin", str(e))
     result["data"] = data
-
-
-def parse_ts(text):
-    return calendar.timegm(time.strptime(text, "%Y-%m-%dT%H:%M:%SZ"))
+    outcomes.save_sample(mint, od.get("created_at"))
 
 
 def origin_ts(od):
-    return parse_ts(od["created_at"]) if od.get("created_at") else time.time()
+    return from_iso(od["created_at"]) if od.get("created_at") else time.time()
 
 
 def add_args(parser):

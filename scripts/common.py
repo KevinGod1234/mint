@@ -17,7 +17,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 REFERENCES = PLUGIN_ROOT / "references"
 _CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
@@ -283,6 +283,11 @@ def known_programs():
 
 def iso(ts):
     return datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if ts is not None else None
+
+
+def from_iso(text):
+    """Inverse of iso(), as whole seconds: APIs such as Helius reject a decimal time."""
+    return int(datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp())
 
 
 def now_iso():

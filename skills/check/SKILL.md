@@ -18,6 +18,7 @@ allowed-tools: Bash(mint *)
 | Largest holders, holder count | `mint holders <mint>` |
 | Price over time, highs and lows | `mint history <mint> --interval 1h --limit 168` |
 | Creator's other coins, did the creator sell? | `mint creator <mint>` |
+| What usually happened to coins like this? | `mint outcomes <mint>` |
 
 If the user typed `/mint:check` with an address ($ARGUMENTS), run
 `mint risk $ARGUMENTS` and give a short, plain summary: what the token is,
