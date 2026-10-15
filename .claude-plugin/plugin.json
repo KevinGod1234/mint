@@ -1,6 +1,6 @@
 {
   "name": "mint",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Read-only Solana token lookups: make-up, origin, price history, pools, holders and risk signals, with sources and gaps. Bring your own RPC and keys, or use free sources.",
   "author": { "name": "Kevin Fransman", "url": "https://github.com/KevinGod1234" },
   "homepage": "https://github.com/KevinGod1234/mint",

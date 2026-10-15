@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""What happened to coins like this one: base rates from the shared mint-data
-set (pump.fun coins measured on-chain at 1, 7 and 30 days) and from the coins
-you looked up yourself. History with sample sizes, never a prediction."""
+"""What happened to coins like this one: pump.fun coins you looked up yourself,
+measured on-chain at 1, 7 and 30 days. History with sample sizes, never a
+prediction."""
 
 import json
 import os
 import time
 
 from common import (CONFIG_FILE, SourceError, account_bytes, accounts, b58decode, find_pda, from_iso,
-                    http_json, iso, rpc, rpc_url, script)
+                    iso, rpc, rpc_url, script)
 
 PUMP = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
-DATASET = "https://raw.githubusercontent.com/KevinGod1234/mint-data/main/data/summary.json"
 SAMPLES_FILE = CONFIG_FILE.parent / "samples.jsonl"  # coins this user looked up; never leaves their machine
 AGES = {"d1": 1, "d7": 7, "d30": 30}
 ACTIVE_HOURS = 24
@@ -111,18 +110,11 @@ def collect(mint, result, args):
         raise SourceError("this coin's on-chain state could not be read")
     data = {"this_coin": {"pump_fun": state["pump_curve"], "graduated_now": state["graduated"],
                           "last_activity_at": state["last_activity_at"]}}
-    try:
-        shared = http_json(DATASET)
-        result.source("mint-data (shared on-chain dataset)", DATASET)
-        data["shared"] = {k: shared.get(k) for k in ("generated_at", "first_created", "last_created", "coins",
-                                                     "all", "graduated_by_d1", "not_graduated_by_d1")}
-    except SourceError as e:
-        result.miss("shared dataset", str(e))
     samples = recheck_samples(result)
     data["yours"] = {"coins": len(samples), "file": str(SAMPLES_FILE), **summarize(samples)}
     if not state["pump_curve"]:
-        result.miss("a matching group", "the shared dataset holds pump.fun coins only; this coin has no pump.fun "
-                    "bonding curve, so the rates describe a different kind of coin", partial=False)
+        result.miss("a matching group", "this coin has no pump.fun bonding curve, so the graduation counts "
+                    "describe a different kind of coin", partial=False)
     result["data"] = data
 
 

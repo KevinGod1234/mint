@@ -17,7 +17,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 REFERENCES = PLUGIN_ROOT / "references"
 _CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")

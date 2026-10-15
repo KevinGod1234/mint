@@ -78,18 +78,15 @@ What each field and signal means, and what it does not mean.
 
 ## outcomes
 
-- `shared`: the public mint-data set. New pump.fun coins, sampled every 6
-  hours, each measured on-chain once in each window: day 1 to 2 (`d1`),
+- Each coin is measured on-chain once in each window: day 1 to 2 (`d1`),
   7 to 14 (`d7`), 30 to 60 (`d30`). A missed window stays empty.
 - `n`: coins measured in that window. `graduated`: of those, how many had
   left the bonding curve. `active_24h`: how many had any transaction in the
   24 hours before the check. Any transaction counts, including a single
   small trade or a bot, so "active" is a low bar.
-- `graduated_by_d1`, `not_graduated_by_d1`: the same counts, split by
-  whether the coin had graduated by its day-1 check.
-- `yours`: the same measurements over the coins this user looked up
-  (`file` is where they are kept, on their computer). A biased sample: it
-  holds what this user chose to check.
+- `yours`: these counts over the coins this user looked up (`file` is where
+  they are kept, on their computer). A biased sample: it holds what this
+  user chose to check.
 - `this_coin`: this coin's state now. Its own future is not in these numbers.
 
 ## Budget errors

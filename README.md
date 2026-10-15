@@ -42,7 +42,7 @@ That is all. No keys needed to start.
 | `/mint:check <mint>` | The full picture: what the token is, origin, liquidity, holders, risk signals with evidence, and what could not be checked |
 | `/mint:price <mint> [interval]` | Price history, change over the range, highs and lows, and whether they reach back to launch |
 | `/mint:creator <mint>` | The creator's other coins and how each stands now, and when the creator sold or moved this one relative to its peak |
-| `/mint:outcomes <mint>` | What happened to pump.fun coins at 1, 7 and 30 days: how many graduated and how many still traded, with sample sizes |
+| `/mint:outcomes <mint>` | What happened to the pump.fun coins you looked up, at 1, 7 and 30 days: how many graduated and how many still traded, with sample sizes |
 | `/mint:holders <mint>` | Largest holders and their share, with pools and vaults kept apart from wallets |
 | `/mint:setup` | Creates your private keys file and shows how to add keys |
 | `/mint:doctor` | Checks every data source, your keys, and this hour's request budget |
@@ -83,11 +83,6 @@ creation time to `~/.config/mint-solana/samples.jsonl` (readable only by
 you). `/mint:outcomes` re-checks those coins at 1, 7 and 30 days and shows
 what happened to the coins *you* looked up. The file never leaves your
 computer. Delete it at any time.
-
-The shared numbers come from a separate public dataset,
-[mint-data](https://github.com/KevinGod1234/mint-data): new pump.fun coins
-sampled every 6 hours and measured on-chain only. Nothing from your
-computer is added to it.
 
 ## Add keys (optional)
 
